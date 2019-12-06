@@ -26,9 +26,9 @@ services:
       - PMA_HOST=db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`${MYSQL_URL}`)"
-      - "traefik.http.routers.nextcloud.entrypoints=websecure"
-      - "traefik.http.routers.nextcloud.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.phpmyadmin.rule=Host(`${MYSQL_URL}`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=websecure"
+      - "traefik.http.routers.phpmyadmin.tls.certresolver=mydnschallenge"
     expose:
      - "80"
 
@@ -44,9 +44,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`${DOCKER_URL}`)"
-      - "traefik.http.routers.nextcloud.entrypoints=websecure"
-      - "traefik.http.routers.nextcloud.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.portainer.rule=Host(`${DOCKER_URL}`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls.certresolver=mydnschallenge"
     expose:
      - "9000"
 
