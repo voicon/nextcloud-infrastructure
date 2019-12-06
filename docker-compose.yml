@@ -115,15 +115,3 @@ services:
     environment:
       - "GODADDY_API_KEY=${GODADDY_API_KEY}"
       - "GODADDY_API_SECRET=${GODADDY_API_SECRET}"
-
-  mariadb-backup:
-    image: zeenlym/mariadb-backup
-    environment:
-        - SCHEDULE=0 * * * *
-        - BACKUP_METHOD=mysqldump
-        - MYSQL_HOST=db
-        - MYSQL_DATABASE=${DB_NAME}
-        - MYSQL_USER=${DB_USER}
-        - MYSQL_PASSWORD={DB_PASSWORD}
-    volumes:
-        - /volume1/Nextcloud/DB:/backup
