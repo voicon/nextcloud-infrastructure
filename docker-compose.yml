@@ -8,7 +8,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - VIRTUAL_PORT=3306
       - TZ=Europe/London
     volumes:
@@ -21,12 +21,12 @@ services:
     depends_on:
       - "db"
     environment:
-      - VIRTUAL_HOST=$MYSQL_URL
+      - VIRTUAL_HOST=${MYSQL_URL}
       - VIRTUAL_PORT=80
       - PMA_HOST=db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`$MYSQL_URL`)"
+      - "traefik.http.routers.nextcloud.rule=Host(`${MYSQL_URL}`)"
       - "traefik.http.routers.nextcloud.entrypoints=websecure"
       - "traefik.http.routers.nextcloud.tls.certresolver=mydnschallenge"
     expose:
@@ -37,14 +37,14 @@ services:
     container_name: portainer
     restart: always
     environment:
-      - VIRTUAL_HOST=$DOCKER_URL
+      - VIRTUAL_HOST=${DOCKER_URL}
       - VIRTUAL_PORT=9000
     volumes: 
       - /volume1/Nextcloud/Portainer:/data
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`$DOCKER_URL`)"
+      - "traefik.http.routers.nextcloud.rule=Host(`${DOCKER_URL}`)"
       - "traefik.http.routers.nextcloud.entrypoints=websecure"
       - "traefik.http.routers.nextcloud.tls.certresolver=mydnschallenge"
     expose:
@@ -55,7 +55,7 @@ services:
     container_name: nextcloud
     restart: always
     environment:
-      - VIRTUAL_HOST=$NEXTCLOUD_URL
+      - VIRTUAL_HOST=${NEXTCLOUD_URL}
       # - VIRTUAL_PORT=80
       # - VIRTUAL_PORT=443
     volumes:
@@ -68,7 +68,7 @@ services:
      - "443"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nextcloud.rule=Host(`$NEXTCLOUD_URL`)"
+      - "traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_URL}`)"
       - "traefik.http.routers.nextcloud.entrypoints=websecure"
       - "traefik.http.routers.nextcloud.tls.certresolver=mydnschallenge"
       - "traefik.frontend.redirect.permanent: 'true'"
@@ -101,7 +101,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.mydnschallenge.acme.dnschallenge=true"
       - "--certificatesresolvers.mydnschallenge.acme.dnschallenge.provider=godaddy"
-      - "--certificatesresolvers.mydnschallenge.acme.email=$ACME_EMAIL"
+      - "--certificatesresolvers.mydnschallenge.acme.email=${ACME_EMAIL}"
       - "--certificatesresolvers.mydnschallenge.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.mydnschallenge.acme.caserver=https://acme-v02.api.letsencrypt.org/directory" # Letsencrypt PRD endpoint
     ports:
@@ -113,17 +113,17 @@ services:
       - "/volume1/Nextcloud/Letsencrypt:/letsencrypt"
     restart: always
     environment:
-      - "GODADDY_API_KEY=$GODADDY_API_KEY"
-      - "GODADDY_API_SECRET=$GODADDY_API_SECRET"
+      - "GODADDY_API_KEY=${GODADDY_API_KEY}"
+      - "GODADDY_API_SECRET=${GODADDY_API_SECRET}"
 
   mariadb-backup:
     image: zeenlym/mariadb-backup
     environment:
-        - SCHEDULE=0 0 3 * *
+        - SCHEDULE=0 * * * *
         - BACKUP_METHOD=mysqldump
-        - MYSQL_HOST=mysql
-        - MYSQL_DATABASE=database
-        - MYSQL_USER=user
-        - MYSQL_PASSWORD=pass
+        - MYSQL_HOST=db
+        - MYSQL_DATABASE=${DB_NAME}
+        - MYSQL_USER=${DB_USER}
+        - MYSQL_PASSWORD={DB_PASSWORD}
     volumes:
-        - ./backup:/backup
+        - /volume1/Nextcloud/DB:/backup
