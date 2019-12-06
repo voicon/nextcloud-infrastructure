@@ -1,0 +1,129 @@
+version: '2'
+services:
+
+  db:
+    image: linuxserver/mariadb
+    container_name: db
+    restart: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT
+      - VIRTUAL_PORT=3306
+      - TZ=Europe/London
+    volumes:
+      - /volume1/Nextcloud/DB:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      - "db"
+    environment:
+      - VIRTUAL_HOST=$MYSQL_URL
+      - VIRTUAL_PORT=80
+      - PMA_HOST=db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`$MYSQL_URL`)"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud.tls.certresolver=mydnschallenge"
+    expose:
+     - "80"
+
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    restart: always
+    environment:
+      - VIRTUAL_HOST=$DOCKER_URL
+      - VIRTUAL_PORT=9000
+    volumes: 
+      - /volume1/Nextcloud/Portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`$DOCKER_URL`)"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud.tls.certresolver=mydnschallenge"
+    expose:
+     - "9000"
+
+  nextcloud:
+    image: registry.gitlab.com/aashishs-projects/docker/nextcloud:latest
+    container_name: nextcloud
+    restart: always
+    environment:
+      - VIRTUAL_HOST=$NEXTCLOUD_URL
+      # - VIRTUAL_PORT=80
+      # - VIRTUAL_PORT=443
+    volumes:
+      - /volume1/Nextcloud/Web_files:/var/www/html
+    depends_on:
+      - "db"
+      - "redis"
+    expose:
+     - "80"
+     - "443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nextcloud.rule=Host(`$NEXTCLOUD_URL`)"
+      - "traefik.http.routers.nextcloud.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud.tls.certresolver=mydnschallenge"
+      - "traefik.frontend.redirect.permanent: 'true'"
+      - "traefik.frontend.redirect.regex: https://(.*)/.well-known/(card|cal)dav"
+      - "traefik.frontend.redirect.replacement: https://$$1/remote.php/dav/"
+
+  redis:
+    image: 'redis'
+    container_name: redis
+    volumes:
+      - /volume1/Nextcloud/Redis:/data
+      - /var/services/homes/aashish.sharma/Projects/Docker/Nextcloud/redis.conf:/usr/local/etc/redis/redis.conf
+    command: >
+      sh -c "redis-server /usr/local/etc/redis/redis.conf"
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    expose:
+     - "6379"
+
+  reverse-proxy:
+    # image: traefik # The official Traefik docker image
+    image: "traefik:v2.0.1"
+    command: 
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mydnschallenge.acme.dnschallenge=true"
+      - "--certificatesresolvers.mydnschallenge.acme.dnschallenge.provider=godaddy"
+      - "--certificatesresolvers.mydnschallenge.acme.email=$ACME_EMAIL"
+      - "--certificatesresolvers.mydnschallenge.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.mydnschallenge.acme.caserver=https://acme-v02.api.letsencrypt.org/directory" # Letsencrypt PRD endpoint
+    ports:
+      - "8080:8080" # The Web UI (enabled by --api)
+      - "8181:80" # The HTTP port
+      - "8282:443" # SSL port
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock" # So that Traefik can listen to the Docker events
+      - "/volume1/Nextcloud/Letsencrypt:/letsencrypt"
+    restart: always
+    environment:
+      - "GODADDY_API_KEY=$GODADDY_API_KEY"
+      - "GODADDY_API_SECRET=$GODADDY_API_SECRET"
+
+  mariadb-backup:
+    image: zeenlym/mariadb-backup
+    environment:
+        - SCHEDULE=0 0 3 * *
+        - BACKUP_METHOD=mysqldump
+        - MYSQL_HOST=mysql
+        - MYSQL_DATABASE=database
+        - MYSQL_USER=user
+        - MYSQL_PASSWORD=pass
+    volumes:
+        - ./backup:/backup
