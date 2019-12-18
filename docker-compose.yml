@@ -45,7 +45,7 @@ services:
       - "9000:9000"
 
   nextcloud:
-    image: registry.gitlab.com/aashishs-projects/docker/nextcloud:latest
+    image: docker.pkg.github.com/aashish108/nextcloud/nextcloud-docker-image:latest
     container_name: nextcloud
     restart: always
     environment:
