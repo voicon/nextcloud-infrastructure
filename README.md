@@ -39,6 +39,12 @@ MYSQL_URL=
 NEXTCLOUD_URL=
 ```
 ## Steps
+1. Make sure the following directories are created:
+- /volume1/Nextcloud
+- /volume1/Nextcloud/Portainer
+- /volume1/Nextcloud/Web_files
+- /volume1/Nextcloud/Redis
+- /volume1/Nextcloud/Letsencrypt
 1. git clone this repo and copy the code over to your Synology
 1. SSH into that directory
 1. Run `sudo docker-compose up -d`, note that sudo is required for Synology NAS
