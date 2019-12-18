@@ -39,14 +39,25 @@ MYSQL_URL=
 NEXTCLOUD_URL=
 ```
 ## Steps
-1. Make sure the following directories are created:
+Make sure the following directories are created on your Synology:
 - /volume1/Nextcloud
 - /volume1/Nextcloud/Portainer
 - /volume1/Nextcloud/Web_files
 - /volume1/Nextcloud/Redis
 - /volume1/Nextcloud/Letsencrypt
+
 1. git clone this repo and copy the code over to your Synology
 1. SSH into that directory
 1. Run `sudo docker-compose up -d`, note that sudo is required for Synology NAS
 1. That should be it for the Docker side
 1. Make sure you port forward port 8282 on your router
+
+## Nextcloud Setup
+
+You should see the Nextcloud setup screen when you go to the URL:8282.
+
+- When specified, the data folder is `/volume1/Nextcloud/Web_files`
+- Choose MariaDB as the database
+- DB user & password were defined in the .env file
+- Choose any name for the DB anme without symbols or spaces
+- Hostname for DB is simply `db`
