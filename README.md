@@ -23,8 +23,9 @@ I have used GoDaddy API for Traefik to arrange for the Letsencrypt SSL certifica
 - Access to your home router so we can control port redirects
 - A domain name that is pointing to your Synology NAS
 - Docker installed on Synology
+- GoDaddy API access (for this guide though alternatives are available)
 ## Environment Variables for configuring
-At the root of the project, you would need a file with the name .env with these values:
+At the root of the project, you would need a file with the name `.env` with these values:
 
 ```
 ACME_EMAIL=
@@ -37,3 +38,9 @@ DB_NAME=
 MYSQL_URL=
 NEXTCLOUD_URL=
 ```
+## Steps
+1. git clone this repo and copy the code over to your Synology
+1. SSH into that directory
+1. Run `sudo docker-compose up -d`, note that sudo is required for Synology NAS
+1. That should be it for the Docker side
+1. Make sure you port forward port 8282 on your router
