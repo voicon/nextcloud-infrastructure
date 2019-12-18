@@ -59,5 +59,5 @@ You should see the Nextcloud setup screen when you go to the URL:8282.
 - When specified, the data folder is `/volume1/Nextcloud/Web_files`
 - Choose MariaDB as the database
 - DB user & password were defined in the .env file
-- Choose any name for the DB anme without symbols or spaces
+- Choose any name for the DB name field without symbols or spaces
 - Hostname for DB is simply `db`
